@@ -28,7 +28,7 @@ empty and its name is listed in the notice's `missing_fields`.
 | Bank | State |
 |---|---|
 | World Bank | Collected every day from the Bank's own API |
-| African Development Bank | Switched off. Its website refused the bot; see `RECON.md` |
+| African Development Bank | Switched off. Its website turns the bot away, from GitHub as well; see `RECON.md` |
 
 ## Where things are
 
@@ -68,10 +68,11 @@ python -m tender_watch run
 The job copies notices to Notion when two GitHub secrets exist:
 `NOTION_TOKEN` and `NOTION_DATABASE_ID`. Without them that step is skipped.
 
-1. Go to <https://www.notion.so/profile/integrations> → **New integration**.
-   Name it `tender-watch`, pick your workspace, type **Internal**, **Save**.
-2. On the integration's page, under **Internal Integration Secret**, click
-   **Show**, then **Copy**. That is the token.
+1. In Notion's **Developer tools**, open the **Developer connections** tab →
+   **New connection**. Name it `tender-watch` and keep it to your own
+   workspace (an internal connection, not a public one). Not a personal
+   access token: that would let the job open everything you can open.
+2. In the list, click **•••** beside `tender-watch` and copy its token.
 3. Open the review database in Notion as a full page → **•••** (top right) →
    **Connections** → search `tender-watch` → **Confirm**.
 4. Still on that page: **•••** → **Copy link**. The link looks like

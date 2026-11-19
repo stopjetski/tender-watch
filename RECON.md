@@ -11,7 +11,7 @@ one request a second.
 | Automated access allowed? | Yes: robots rules allow it and the Bank offers the API for this | **Not established.** The site refused the bot before any rule could be read |
 | How notices are listed | One JSON API, newest first | Not seen |
 | Details in PDFs? | No. Everything is in the API reply | Not seen |
-| State | Collected end to end | Switched off, waiting for a decision |
+| State | Collected end to end | Switched off: refused from the development machine and from GitHub |
 
 ## World Bank
 
@@ -111,25 +111,27 @@ project's rule of an honest bot name.
   exists, because writing one without real pages would be guesswork.
 - A web search found no official feed or API for AfDB project procurement
   notices.
-- One thing is **not known**: the challenge may depend on where the request
-  comes from. GitHub's machines, where the daily job runs, might be let
-  through, or might not. This has not been tried: a safety check stopped
-  the first attempt to probe the site from GitHub, and it is right that
-  the owner says yes first, since the site has already said no once.
+- **GitHub's machines are refused too.** On 19 Nov 2026 the daily job's own
+  home, a GitHub runner, asked for `robots.txt` once under the bot's real
+  name (workflow "afdb access check", run 1). The answer was the same
+  browser challenge, HTTP 403. So this is not a quirk of one network: the
+  site turns away automated visitors from the place this project runs.
 
-### Options, in the order I would try them
+### Where that leaves AfDB
+
+AfDB cannot be collected by this project as things stand, and nothing here
+will try to get round the challenge. The routes left, in the order I would
+take them:
 
 1. **Ask the Bank.** An e-mail to AfDB's procurement or web team saying what
    the project is and asking either to let the named bot through or to point
-   to a feed. This is the only route that ends in permission rather than
-   tolerance.
-2. **One honest check from GitHub.** Switch AfDB on (`sources.toml`); the
-   collector asks for `robots.txt` once, obeys what it says, and stops if it
-   is challenged. If the site answers normally, the 20-notice inspection and
-   the parsers follow.
-3. **Swap the hard case.** If AfDB stays closed, use another bank whose
-   notices live in PDFs (from the candidate list) to answer the PDF question
-   during the two weeks.
+   to a feed. This is the only route that ends in permission.
+2. **Swap the hard case.** Use another bank whose notices live in PDFs (from
+   the candidate list) to answer the PDF question during the two weeks,
+   while waiting for AfDB's reply.
+
+The access check can be run again at any time (Actions → "afdb access
+check" → Run workflow); it makes one request.
 
 ### What is ready for when it opens
 
@@ -162,14 +164,15 @@ deadlines to need either an LLM step or a human check.
 ## Plan
 
 1. World Bank: built and tested (done).
-2. AfDB: wait for the decision above.
+2. AfDB: closed to the bot; waiting on the Bank's answer or a swap.
 3. Daily job at 06:00 Singapore time, report in `reports/`, alarm rules as
    specified.
 4. Notion mirror for review.
 
 ## Open questions for the owner
 
-- May the collector make its one `robots.txt` request to AfDB from GitHub?
+- AfDB: send the request for access, or swap in another PDF-heavy bank for
+  the two weeks, or both?
 - Will the website charge money? If so, World Bank data needs the Bank's
   written consent, or confirmation that procurement notices fall under an
   open dataset licence.
