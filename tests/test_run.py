@@ -70,3 +70,22 @@ def test_a_blocked_bank_is_reported_as_blocked(tmp_path, fake_requests, fake_res
     text = (tmp_path / "reports" / "2026-11-20.md").read_text(encoding="utf-8")
     assert "| afdb | blocked by the site |" in text
     assert len(session.session.calls) == 1  # asked for robots.txt once and stopped
+
+
+def test_the_afdb_access_check_makes_one_request_and_reports_a_challenge(fake_requests, fake_response, fake_clock):
+    from tender_watch.sources import afdb
+
+    challenge = lambda url, kw: fake_response(status_code=403, text="Just a moment...", headers={"cf-mitigated": "challenge"})  # noqa: E731
+    session = PoliteSession(session=fake_requests(challenge), sleep=fake_clock.sleep, clock=fake_clock.clock)
+    result = afdb.access_check(session)
+    assert result["let_in"] is False and "challenge" in result["reason"]
+    assert [url for url, _ in session.session.calls] == ["https://www.afdb.org/robots.txt"]
+
+
+def test_the_afdb_access_check_obeys_robots_rules(fake_requests, fake_response, fake_clock):
+    from tender_watch.sources import afdb
+
+    for rules, expected in (("User-agent: *\nDisallow: /en/projects-and-operations/\n", False), ("User-agent: *\nDisallow: /admin/\n", True)):
+        session = PoliteSession(session=fake_requests(lambda url, kw: fake_response(text=rules)), sleep=fake_clock.sleep, clock=fake_clock.clock)
+        result = afdb.access_check(session)
+        assert result["let_in"] is expected and result["robots_txt"] == rules

@@ -94,9 +94,19 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("run", help="collect every switched-on source, update the data and write today's report")
     sub.add_parser("notion", help="copy new and changed notices to the Notion review database")
+    sub.add_parser("check-afdb", help="ask afdb.org for its robots.txt once and report whether the bot is let in")
     args = parser.parse_args(argv)
     if args.command == "run":
         return run()
+    if args.command == "check-afdb":
+        from .sources import afdb
+
+        result = afdb.access_check(PoliteSession())
+        print("LET IN" if result["let_in"] else "NOT LET IN", "-", result["reason"])
+        if result["robots_txt"] is not None:
+            print("----- robots.txt -----")
+            print(result["robots_txt"][:20000])
+        return 0
     from . import notion_sync
 
     return notion_sync.main()
