@@ -1,0 +1,69 @@
+name: daily collection
+
+on:
+  schedule:
+    - cron: "0 22 * * *" # 22:00 UTC = 06:00 in Singapore
+  workflow_dispatch: # the "Run workflow" button
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-collection
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Keep downloaded PDFs between runs
+        uses: actions/cache@v4
+        with:
+          path: cache/pdf
+          key: pdf-${{ github.run_id }}
+          restore-keys: pdf-
+
+      - name: Collect notices and write the report
+        id: collect
+        continue-on-error: true
+        run: python -m tender_watch run
+
+      - name: Copy new and changed notices to Notion
+        id: notion
+        continue-on-error: true
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        run: python -m tender_watch notion
+
+      - name: Save the data and the report in the repo
+        run: |
+          git config user.name "tender-watch bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data reports
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+          else
+            git commit -m "Daily collection $(TZ=Asia/Singapore date +%F)"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+
+      # The data is saved first, then the run is failed so GitHub sends the e-mail.
+      - name: Breakage alarm
+        if: steps.collect.outcome == 'failure'
+        run: |
+          echo "::error::A source looks broken. Open today's file in reports/ and read the Alarm section."
+          exit 1
+      - name: Notion copy failed
+        if: steps.notion.outcome == 'failure'
+        run: |
+          echo "::error::The data was collected and saved, but copying it to Notion failed. See the Notion step above."
+          exit 1
