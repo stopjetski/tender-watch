@@ -8,14 +8,32 @@ in, from real saved pages.
 """
 from __future__ import annotations
 
+import urllib.robotparser
 from datetime import date
 
-from ..http import Blocked, FetchFailed
+from ..http import USER_AGENT, Blocked, FetchFailed
 from .base import SourceResult
 
 NAME = "afdb"
 ROBOTS_URL = "https://www.afdb.org/robots.txt"
 LISTING_URL = "https://www.afdb.org/en/projects-and-operations/procurement"
+
+
+def access_check(session) -> dict:
+    """Ask for robots.txt once and say plainly what came back. One request, no retry on a refusal."""
+    try:
+        response = session._raw_get(ROBOTS_URL)
+    except Blocked as error:
+        return {"let_in": False, "reason": str(error), "robots_txt": None}
+    except FetchFailed as error:
+        return {"let_in": False, "reason": f"could not reach the site: {error}", "robots_txt": None}
+    if response.status_code != 200:
+        return {"let_in": False, "reason": f"robots.txt answered HTTP {response.status_code}", "robots_txt": None}
+    parser = urllib.robotparser.RobotFileParser()
+    parser.parse(response.text.splitlines())
+    allowed = parser.can_fetch(USER_AGENT, LISTING_URL)
+    reason = "robots.txt allows the procurement pages" if allowed else "robots.txt disallows the procurement pages for this bot"
+    return {"let_in": allowed, "reason": reason, "robots_txt": response.text}
 
 
 def collect(session, today: date, lookback_days: int = 7) -> SourceResult:
