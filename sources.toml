@@ -1,0 +1,13 @@
+# Which banks the daily run collects, and how far back it looks each day.
+# To add a bank: see "How to add another bank" in README.md.
+
+[worldbank]
+enabled = true
+# Re-read the last N days on every run, so late notices and corrections are caught.
+lookback_days = 7
+
+[afdb]
+# Switched off: afdb.org answered this project's first requests with a
+# "prove you are a browser" challenge. See RECON.md before turning it on.
+enabled = false
+lookback_days = 7
