@@ -250,5 +250,47 @@
    }
   },
   "alarms": []
+ },
+ {
+  "date": "2026-11-24",
+  "started_at": "2026-11-24T05:41:52Z",
+  "sources": {
+   "worldbank": {
+    "enabled": true,
+    "seen": 706,
+    "new": 36,
+    "updated": 1,
+    "closed": 17,
+    "parse_errors": 0,
+    "fatal": null,
+    "blocked": false,
+    "requests": 3,
+    "completeness": {
+     "notices": 706,
+     "fields": {
+      "title": 100,
+      "description": 100,
+      "country_code": 100,
+      "country_name": 100,
+      "sector": 80,
+      "project_name": 100,
+      "project_id": 100,
+      "borrower_or_implementing_agency": 100,
+      "language": 100,
+      "published_date": 100,
+      "deadline": 29,
+      "source_url": 100,
+      "document_urls": 0
+     },
+     "deadline_where_expected": 100,
+     "deadline_expected_on": 207,
+     "multinational": 81
+    }
+   },
+   "afdb": {
+    "enabled": false
+   }
+  },
+  "alarms": []
  }
 ]
